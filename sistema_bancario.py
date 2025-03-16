@@ -31,6 +31,22 @@ class Historico:
     def adicionar_transacao(self, transacao):
         self.transacoes.append(transacao)
 
+class Conta:
+    def __init__(self, numero, cliente, agencia="0001"):
+        self.saldo = 0.0
+        self.numero = numero
+        self.cliente = cliente
+        self.agencia = agencia
+        self.historico = Historico()
+
+    def sacar(self, valor):
+        saque = Saque(valor)
+        return saque.registrar(self)
+
+    def depositar(self, valor):
+        deposito = Deposito(valor)
+        deposito.registrar(self)
+
 class Banco:
     def __init__(self):
         self.usuarios = []
