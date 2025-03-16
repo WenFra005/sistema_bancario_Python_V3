@@ -54,27 +54,28 @@ class ContaCorrente(Conta):
         self.limite_saques = limite_saques
         self.saques_diarios = {"data": date.today(), "contador": 0}
 
-        def sacar(self, valor):
-            if self.saques_diarios["data"] != date.today():
-                self.saques_diarios = {"data": date.today(), "contador": 0}
+    def sacar(self, valor):
+        if self.saques_diarios["data"] != date.today():
+            self.saques_diarios = {"data": date.today(), "contador": 0}
 
-            if self.saques_diarios["contador"] >= self.limite_saques:
-                print("Limite de saques diários atingido\n")
-                return False
+        if self.saques_diarios["contador"] >= self.limite_saques:
+            print("Limite de saques diários atingido\n")
+            return False
 
-            if valor <= self.saldo + self.limite:
-                self.saques_diarios["contador"] += 1
-                return super().sacar(valor)
-            else:
-                print("Saldo insuficiente\n")
-                return False
+        if valor <= self.saldo + self.limite:
+            self.saques_diarios["contador"] += 1
+            return super().sacar(valor)
+        else:
+            print("Saldo insuficiente\n")
+            return False
 
 class Cliente:
     def __init__(self, endereco):
         self.endereco = endereco
         self.contas = []
 
-    def realizar_transacao(self, conta, transacao):
+    @staticmethod
+    def realizar_transacao(conta, transacao):
         transacao.registrar(conta)
 
     def adicionar_conta(self, conta):
@@ -94,7 +95,7 @@ class Banco:
         self.numero_conta = 0
 
     def validar_usuario_conta_cpf(self, cpf):
-        return next((usuario for usuario in self.usuarios if usuario["cpf"] == cpf), None)
+        return next((usuario for usuario in self.usuarios if usuario.cpf == cpf), None)
 
     def criar_usuario(self):
         cpf = input("Digite o CPF do usuário: ")
@@ -183,13 +184,13 @@ class Banco:
         print(f"Agência: {conta['agencia']}")
         print(f"Número da conta: {conta['numero_conta']}")
         print("Depósitos".center(25, "="))
-        for i, valor in enumerate(conta.historico.transacoes):
+        for i, transacao in enumerate(conta.historico.transacoes):
             if isinstance(transacao, Deposito):
-                print(f"{i + 1}. R$ {valor:.2f}")
+                print(f"{i + 1}. R$ {transacao.valor:.2f}")
         print("Saques".center(25, "="))
-        for i, valor in enumerate(conta.historico.transacoes):
+        for i, transacao in enumerate(conta.historico.transacoes):
             if isinstance(transacao, Saque):
-                print(f"{i + 1}. R$ {valor:.2f}")
+                print(f"{i + 1}. R$ {transacao.valor:.2f}")
         print("Saldo".center(25, "="))
         print(f"R$ {conta["saldo"]:.2f}")
         print("\n")
