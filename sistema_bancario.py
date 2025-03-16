@@ -1,6 +1,10 @@
 import textwrap
 from datetime import date
 
+class Transacao:
+    def registrar(self, conta):
+        pass
+
 
 class Banco:
     def __init__(self):
