@@ -47,6 +47,28 @@ class Conta:
         deposito = Deposito(valor)
         deposito.registrar(self)
 
+class ContaCorrente(Conta):
+    def __init__(self, cliente, numero, agencia="0001", limite=1000.0, limite_saques=3):
+        super().__init__(cliente, numero, agencia)
+        self.limite = limite
+        self.limite_saques = limite_saques
+        self.saques_diarios = {"data": date.today(), "contador": 0}
+
+        def sacar(self, valor):
+            if self.saques_diarios["data"] != date.today():
+                self.saques_diarios = {"data": date.today(), "contador": 0}
+
+            if self.saques_diarios["contador"] >= self.limite_saques:
+                print("Limite de saques diários atingido\n")
+                return False
+
+            if valor <= self.saldo + self.limite:
+                self.saques_diarios["contador"] += 1
+                return super().sacar(valor)
+            else:
+                print("Saldo insuficiente\n")
+                return False
+
 class Banco:
     def __init__(self):
         self.usuarios = []
