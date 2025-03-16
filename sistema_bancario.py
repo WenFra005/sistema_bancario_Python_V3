@@ -1,12 +1,15 @@
 import textwrap
-from datetime import date
-
+from datetime import datetime
 class Transacao:
+    def __init__(self):
+        self.data = datetime.now()
+
     def registrar(self, conta):
         pass
 
 class Deposito(Transacao):
     def __init__(self, valor):
+        super().__init__()
         self.valor = valor
 
     def registrar(self, conta):
@@ -15,6 +18,7 @@ class Deposito(Transacao):
 
 class Saque(Transacao):
     def __init__(self, valor):
+        super().__init__()
         self.valor = valor
 
     def registrar(self, conta):
@@ -49,14 +53,14 @@ class Conta:
 
 class ContaCorrente(Conta):
     def __init__(self, cliente, numero, agencia="0001", limite=1000.0, limite_saques=3):
-        super().__init__(cliente, numero, agencia)
+        super().__init__(numero, cliente, agencia)
         self.limite = limite
         self.limite_saques = limite_saques
-        self.saques_diarios = {"data": date.today(), "contador": 0}
+        self.saques_diarios = {"data": datetime.today().date(), "contador": 0}
 
     def sacar(self, valor):
-        if self.saques_diarios["data"] != date.today():
-            self.saques_diarios = {"data": date.today(), "contador": 0}
+        if self.saques_diarios["data"] != datetime.today().date():
+            self.saques_diarios = {"data": datetime.today().date(), "contador": 0}
 
         if self.saques_diarios["contador"] >= self.limite_saques:
             print("Limite de saques diários atingido\n")
@@ -179,20 +183,21 @@ class Banco:
 
         print("Extrato".center(25, "="))
         print("Dados Pessoais".center(25, "="))
-        print(f"Nome: {conta['usuario']['nome']}")
-        print(f"CPF: {conta['usuario']['cpf']}")
-        print(f"Agência: {conta['agencia']}")
-        print(f"Número da conta: {conta['numero_conta']}")
+        print(f"Nome: {conta.cliente.nome}")
+        print(f"CPF: {conta.cliente.cpf}")
+        print(f"Agência: {conta.agencia}")
+        print(f"Número da conta: {conta.numero}")
         print("Depósitos".center(25, "="))
-        for i, transacao in enumerate(conta.historico.transacoes):
+
+        for transacao in conta.historico.transacoes:
             if isinstance(transacao, Deposito):
-                print(f"{i + 1}. R$ {transacao.valor:.2f}")
+                print(f"-> {transacao.data.strftime('%d/%m/%Y %H:%M:%S')} - R$ {transacao.valor:.2f}")
         print("Saques".center(25, "="))
-        for i, transacao in enumerate(conta.historico.transacoes):
+        for transacao in conta.historico.transacoes:
             if isinstance(transacao, Saque):
-                print(f"{i + 1}. R$ {transacao.valor:.2f}")
+                print(f"-> {transacao.data.strftime('%d/%m/%Y %H:%M:%S')} - R$ {transacao.valor:.2f}")
         print("Saldo".center(25, "="))
-        print(f"R$ {conta["saldo"]:.2f}")
+        print(f"R$ {conta.saldo:.2f}")
         print("\n")
 
     def main(self):
