@@ -106,19 +106,13 @@ class Banco:
 
         nome = input("Digite o nome do usuário: ")
         data_nascimento = input("Digite a data de nascimento do usuário: ")
-        email = input("Digite o email do usuário: ")
         endereco = input(
             "Digite o endereço do usuário (Logradouro, nº - Bairro - Cidade/Sigla do Estado): "
         )
 
-        self.usuarios.append({
-            "cpf": cpf,
-            "nome": nome,
-            "data_nascimento": data_nascimento,
-            "email": email,
-            "endereco": endereco
-        })
-        print("Usuário cadastrado com sucesso")
+        usuario = PessoaFisica(cpf, nome, data_nascimento, endereco)
+        self.usuarios.append(usuario)
+        print("Usuário cadastrado com sucesso!\n")
 
     def criar_conta(self):
         cpf = input("Digite o CPF do usuário: ")
@@ -129,20 +123,13 @@ class Banco:
             return
 
         self.numero_conta += 1
-        conta = {
-            "agencia": "0001",
-            "numero_conta": self.numero_conta,
-            "usuario": usuario,
-            "saldo": 0,
-            "extrato": {"depositos": [], "saques": []},
-            "saques_diarios": {"data": date.today(), "contador": 0}
-        }
-
+        conta = ContaCorrente(usuario, self.numero_conta)
+        usuario.adicionar_conta(conta)
         self.contas.append(conta)
         print("Conta criada com sucesso!")
         print("Dados da conta".center(25, "="))
-        print(f"Agência: {conta['agencia']}")
-        print(f"Número da conta: {conta['numero_conta']}\n")
+        print(f"Agência: {conta.agencia}")
+        print(f"Número da conta: {conta.numero}\n")
 
     @staticmethod
     def exibir_menu():
@@ -158,7 +145,7 @@ class Banco:
         return input(textwrap.dedent(menu))
 
     def obter_conta(self, numero_conta):
-        return next((conta for conta in self.contas if conta["numero_conta"] == numero_conta), None)
+        return next((conta for conta in self.contas if conta.numero == numero_conta), None)
 
     def depositar(self, numero_conta, valor_deposito):
         conta = self.obter_conta(numero_conta)
@@ -169,34 +156,19 @@ class Banco:
         if valor_deposito <= 0:
             print("Valor inválido\n")
         else:
-            conta["saldo"] += valor_deposito
-            conta["extrato"]["depositos"].append(valor_deposito)
+            conta.depositar(valor_deposito)
             print("Depósito efetuado com sucesso\n")
 
-    def sacar(self, *, numero_conta, valor_saque):
+    def sacar(self, numero_conta, valor_saque):
         conta = self.obter_conta(numero_conta)
         if not conta:
             print("Conta não encontrada\n")
             return
 
-        if conta["saques_diarios"]["data"] != date.today():
-            conta["saques_diarios"] = {"data": date.today(), "contador": 0}
-
-        if conta["saques_diarios"]["contador"] >= 3:
-            print("Limite de saques diários atingido\n")
-            return
-
-        if valor_saque <= conta["saldo"]:
-            conta["saldo"] -= valor_saque
-            conta["extrato"]["saques"].append(valor_saque)
-            conta["saques_diarios"]["contador"] += 1
+        if conta.sacar(valor_saque):
             print("Saque efetuado com sucesso\n")
-        elif valor_saque > conta["saldo"]:
-            print("Saldo insuficiente\n")
-        elif valor_saque == 0:
-            print("Valor inválido\n")
         else:
-            print("Inválido\n")
+            print("Saque não efetuado\n")
 
     def exibir_extrato(self, numero_conta):
         conta = self.obter_conta(numero_conta)
@@ -211,11 +183,13 @@ class Banco:
         print(f"Agência: {conta['agencia']}")
         print(f"Número da conta: {conta['numero_conta']}")
         print("Depósitos".center(25, "="))
-        for i, valor in enumerate(conta["extrato"]["depositos"]):
-            print(f"{i + 1}. R$ {valor:.2f}")
+        for i, valor in enumerate(conta.historico.transacoes):
+            if isinstance(transacao, Deposito):
+                print(f"{i + 1}. R$ {valor:.2f}")
         print("Saques".center(25, "="))
-        for i, valor in enumerate(conta["extrato"]["saques"]):
-            print(f"{i + 1}. R$ {valor:.2f}")
+        for i, valor in enumerate(conta.historico.transacoes):
+            if isinstance(transacao, Saque):
+                print(f"{i + 1}. R$ {valor:.2f}")
         print("Saldo".center(25, "="))
         print(f"R$ {conta["saldo"]:.2f}")
         print("\n")
@@ -230,10 +204,10 @@ class Banco:
             elif opcao == "2":
                 numero_conta = int(input("Digite o número da conta: "))
                 valor_saque = float(input("Digite o valor do saque: "))
-                self.sacar(numero_conta=numero_conta, valor_saque=valor_saque)
+                self.sacar(numero_conta, valor_saque)
             elif opcao == "3":
                 numero_conta = int(input("Digite o número da conta: "))
-                self.exibir_extrato(numero_conta=numero_conta)
+                self.exibir_extrato(numero_conta)
             elif opcao == "4":
                 self.criar_usuario()
             elif opcao == "5":
