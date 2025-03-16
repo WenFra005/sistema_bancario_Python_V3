@@ -11,7 +11,18 @@ class Deposito(Transacao):
 
     def registrar(self, conta):
         conta.saldo += self.valor
-        conta.extrato.append(self.valor)
+        conta.historico.adicionar_transacao(self)
+
+class Saque(Transacao):
+    def __init__(self, valor):
+        self.valor = valor
+
+    def registrar(self, conta):
+        if conta.saldo >= self.valor:
+            conta.saldo -= self.valor
+            conta.historico.adicionar_transacao(self)
+            return True
+        return False
 
 class Banco:
     def __init__(self):
