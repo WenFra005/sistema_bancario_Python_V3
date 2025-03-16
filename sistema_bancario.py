@@ -181,22 +181,20 @@ class Banco:
             print("Conta não encontrada\n")
             return
 
-        print("Extrato".center(25, "="))
-        print("Dados Pessoais".center(25, "="))
+        print("Extrato".center(60, "="))
+        print("Dados Pessoais".center(60, "="))
         print(f"Nome: {conta.cliente.nome}")
         print(f"CPF: {conta.cliente.cpf}")
         print(f"Agência: {conta.agencia}")
         print(f"Número da conta: {conta.numero}")
-        print("Depósitos".center(25, "="))
+        print("Transações".center(60, "="))
 
-        for transacao in conta.historico.transacoes:
-            if isinstance(transacao, Deposito):
-                print(f"-> {transacao.data.strftime('%d/%m/%Y %H:%M:%S')} - R$ {transacao.valor:.2f}")
-        print("Saques".center(25, "="))
-        for transacao in conta.historico.transacoes:
-            if isinstance(transacao, Saque):
-                print(f"-> {transacao.data.strftime('%d/%m/%Y %H:%M:%S')} - R$ {transacao.valor:.2f}")
-        print("Saldo".center(25, "="))
+        transacoes_ordernadas = sorted(conta.historico.transacoes, key=lambda t: t.data)
+        for transacao in transacoes_ordernadas:
+            tipo = "Depósito" if isinstance(transacao, Deposito) else "Saque"
+            print(f"-> {transacao.data.strftime('%d/%m/%Y %H:%M:%S')} - {tipo} - R$ {transacao.valor:.2f}")
+
+        print("Saldo".center(60, "="))
         print(f"R$ {conta.saldo:.2f}")
         print("\n")
 
