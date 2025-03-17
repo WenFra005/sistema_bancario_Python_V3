@@ -21,7 +21,10 @@ class Transacao:
         :param conta: A conta onde a transação será registrada
         :type conta: Conta
         """
-        pass
+
+    def detalhes(self):
+        """Retorna os detalhes da transação"""
+        return f"Transação em {self.data}"
 
 class Deposito(Transacao):
     """Classe para transações de depósito"""
@@ -44,6 +47,9 @@ class Deposito(Transacao):
         """
         conta.saldo += self.valor
         conta.historico.adicionar_transacao(self)
+    def detalhes(self):
+        """Retorna os detalhes do depósito"""
+        return f"Depósito de R$ {self.valor:.2f} em {self.data}"
 
 class Saque(Transacao):
     """Classe para transações de saque"""
@@ -72,6 +78,10 @@ class Saque(Transacao):
             return True
         return False
 
+    def detalhes(self):
+        """Retorna os detalhes do saque"""
+        return f"Saque de R$ {self.valor:.2f} em {self.data}"
+
 class Historico:
     """Classe para armazenar o histórico de transações de uma conta"""
     def __init__(self):
@@ -86,6 +96,10 @@ class Historico:
         :type transacao: Transacao
         """
         self.transacoes.append(transacao)
+
+    def listar_transacoes(self):
+        """Lista todas as transações do histórico"""
+        return [transacao.detalhes() for transacao in self.transacoes]
 
 class Conta:
     """Classe base para contas bancárias"""
@@ -128,22 +142,20 @@ class Conta:
 
 class ContaCorrente(Conta):
     """Classe para contas correntes, com limite de saque diário."""
-    def __init__(self, cliente, numero, agencia="0001", limite=1000.0, limite_saques=3):
+    def __init__(self, cliente, numero, **kwargs):
         """
-        Inicializa uma conta corrente com cliente, número, agência, limite e limite de saques
+        Inicializa uma conta-corrente com cliente, número, agência, limite e limite de saques
         diários fornecidos.
 
         :param cliente: O cliente dono da conta
         :type cliente: Cliente
         :param numero: O número da conta
         :type numero: int
-        :param agencia: A agência da conta. Padrão é "0001"
-        :type agencia: str, optional
-        :param limite: O limite de crédito da conta. Padrão é 1000.0
-        :type limite: float, optional
-        :param limite_saques: O limite diário de saques. Padrão é 3
-        :type limite_saques: int, optional
+        :param kwargs: Outros parâmetros opcionais (agencia, limite, limite_saques)
         """
+        agencia = kwargs.get('agencia', "0001")
+        limite = kwargs.get('limite', 1000.0)
+        limite_saques = kwargs.get('limite_saques', 3)
         super().__init__(numero, cliente, agencia)
         self.limite = limite
         self.limite_saques = limite_saques
@@ -168,9 +180,8 @@ class ContaCorrente(Conta):
         if valor <= self.saldo + self.limite:
             self.saques_diarios["contador"] += 1
             return super().sacar(valor)
-        else:
-            print("Saldo insuficiente\n")
-            return False
+        print("Saldo insuficiente\n")
+        return False
 
 class Cliente:
     """Classe para clientes do banco"""
@@ -375,7 +386,10 @@ class Banco:
         transacoes_ordernadas = sorted(conta.historico.transacoes, key=lambda t: t.data)
         for transacao in transacoes_ordernadas:
             tipo = "Depósito" if isinstance(transacao, Deposito) else "Saque"
-            print(f"-> {transacao.data.strftime('%d/%m/%Y %H:%M:%S')} - {tipo} - R$ {transacao.valor:.2f}")
+            print(
+                f"-> {transacao.data.strftime('%d/%m/%Y %H:%M:%S')} - {tipo} - "
+                f"R$ {transacao.valor:.2f}"
+            )
 
         print("Saldo".center(60, "="))
         print(f"R$ {conta.saldo:.2f}")
