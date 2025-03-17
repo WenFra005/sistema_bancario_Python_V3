@@ -192,6 +192,9 @@ class Cliente:
         :param endereco: O endereço do cliente
         :type endereco: str
         """
+        self.cpf = None
+        self.nome = None
+        self.nome = None
         self.endereco = endereco
         self.contas = []
 
